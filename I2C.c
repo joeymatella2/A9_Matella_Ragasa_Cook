@@ -1,8 +1,8 @@
 /*
  *******************************************************************************
  * @file           : I2C.c
- * @brief          : X
- * project         : EE 329 S'26 AX
+ * @brief          : EEPROM Interface
+ * project         : EE 329 S'26 A9
  * authors         : joeym
  * version         : 0.1
  * date            : May 15, 2026
@@ -11,13 +11,8 @@
  * clocks          : 4 MHz MSI to AHB2
  * @attention      : (c) 2026 STMicroelectronics.  All rights reserved.
  *******************************************************************************
- * Description: X
+ * Description: I2C1 Configuration and functions to read and write with EEPROM
  *
- *******************************************************************************
- * GPIO Wiring
- * |   Component    | GPIO Identifier | Connector Location | Config
- *-----------------------------------------------------------------------------
- * | LCD - DB4 - 11 | PC0             | CN9-3              | OUT
  *******************************************************************************
  * Version History
  *  Ver.|   Date   |  Description
@@ -32,29 +27,27 @@
 void EEPROM_init( void ){
    /* USER configure GPIO pins for I2C alternate functions SCL and SDA */
 
-	// Configure PB7 as I2C1_SDA (AF4)
+	// Configure PB9 as I2C1_SDA (AF4)
 	// Configure PB8 as I2C1_SCL (AF4)
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	GPIOB->AFR[0] &= ~(0xF << (7*4));
-	GPIOB->AFR[0] |=  (4   << (7*4));
-	GPIOB->AFR[1] &= ~(0xF);
-	GPIOB->AFR[1] |=  (4);
+	GPIOB->AFR[1] &= ~((0xF << 0) | (0XF << 4));
+	GPIOB->AFR[1] |=  ((4   << 0) | (4   << 4));
 
 	// open drain, very high speed, no pullup no pulldown
-	GPIOB->OTYPER  |= (GPIO_OTYPER_OT7
+	GPIOB->OTYPER  |= (GPIO_OTYPER_OT9
 			            | GPIO_OTYPER_OT8);
 
-	GPIOB->OSPEEDR |= (GPIO_OSPEEDR_OSPEED7
+	GPIOB->OSPEEDR |= (GPIO_OSPEEDR_OSPEED9
 			             | GPIO_OSPEEDR_OSPEED8);
 
-	GPIOB->PUPDR   &= ~(GPIO_PUPDR_PUPD7
+	GPIOB->PUPDR   &= ~(GPIO_PUPDR_PUPD9
 			              | GPIO_PUPDR_PUPD8);
 
 	// Alternate function mode
-	GPIOB->MODER   &= ~(GPIO_MODER_MODE7
+	GPIOB->MODER   &= ~(GPIO_MODER_MODE9
 			              | GPIO_MODER_MODE8);
 
-	GPIOB->MODER   |= (GPIO_MODER_MODE7_1
+	GPIOB->MODER   |= (GPIO_MODER_MODE9_1
 			            | GPIO_MODER_MODE8_1);
 
    RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;  // enable I2C bus clock
@@ -68,7 +61,7 @@ void EEPROM_init( void ){
 
 }
 
-void EEPROM_write( uint8_t dataWrite, uint8_t targetAddr, uint16_t memoryAddr){
+void EEPROM_write(uint8_t targetAddr, uint16_t memoryAddr, uint8_t dataWrite){
    I2C1->CR2 &= ~( I2C_CR2_RD_WRN );         // CLR CR = write
    I2C1->CR2 &= ~( I2C_CR2_NBYTES );         // Reset # of bytes
    // 2 bytes mem. address & 1 byte data
@@ -82,7 +75,6 @@ void EEPROM_write( uint8_t dataWrite, uint8_t targetAddr, uint16_t memoryAddr){
    I2C1->CR2 |= ((targetAddr & 0x7F)<<(I2C_CR2_SADD_Pos+1));  // Set address
    I2C1->CR2 |= I2C_CR2_START; // Start
    while(!(I2C1->ISR & I2C_ISR_TXIS));      // Wait for TXDR
-
    // 16 bit EEPROM_MEMORY ADDR
    I2C1->TXDR = (memoryAddr >> 8);   // High byte of MEM REG
 
@@ -98,7 +90,7 @@ void EEPROM_write( uint8_t dataWrite, uint8_t targetAddr, uint16_t memoryAddr){
 }
 
 
-uint8_t EEPROM_read(uint16_t memoryAddr, uint8_t targetAddr) {
+uint8_t EEPROM_read(uint8_t targetAddr, uint16_t memoryAddr) {
 	uint8_t memoryData;
 	// build EEPROM transaction
    I2C1->CR2   &=  ~( I2C_CR2_AUTOEND );   // no auto STOP
