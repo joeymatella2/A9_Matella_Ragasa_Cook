@@ -14,11 +14,6 @@
  * Description: X
  *
  *******************************************************************************
- * GPIO Wiring
- * |   Component    | GPIO Identifier | Connector Location | Config
- *-----------------------------------------------------------------------------
- * | LCD - DB4 - 11 | PC0             | CN9-3              | OUT
- *******************************************************************************
  * Version History
  *  Ver.|   Date   |  Description
  *  ---------------------------------------------------------------------------
@@ -36,7 +31,6 @@
 * authors         : Tyler Ragasa
 ******************************************************************************/
 
-/* !!! double check this compiles !!! */
 
 #ifndef INC_I2C_H_
 #define INC_I2C_H_
@@ -47,7 +41,7 @@
 #define EEPROM_ADDRESS (0b1010111) // Set by hardware, 7-bit
 
 void EEPROM_init(void);
-void EEPROM_write( uint8_t dataWrite, uint8_t targetAddr, uint16_t memoryAddr);
-uint8_t EEPROM_read(uint16_t memoryAddr, uint8_t targetAddr);
+void EEPROM_write(uint8_t targetAddr, uint16_t memoryAddr, uint8_t dataWrite);
+uint8_t EEPROM_read(uint8_t targetAddr, uint16_t memoryAddr);
 
 #endif /* INC_I2C_H_ */
