@@ -1,29 +1,39 @@
 /*
  *******************************************************************************
  * @file           : I2C.c
- * @brief          : EEPROM Interface
+ * @brief          : I2C EEPROM Interface
  * project         : EE 329 S'26 A9
- * authors         : joeym
+ * authors         : Joseph Matella, Nathan Cook, Tyler Ragasa
  * version         : 0.1
- * date            : May 15, 2026
+ * date            : May 18, 2026
  * compiler        : STM32CubeIDE v.1.19.0 Build: 14980_20230301_1550 (UTC)
  * target          : NUCLEO-L4A6ZG
  * clocks          : 4 MHz MSI to AHB2
  * @attention      : (c) 2026 STMicroelectronics.  All rights reserved.
  *******************************************************************************
- * Description: I2C1 Configuration and functions to read and write with EEPROM
- *
+ * Description: Configures I2C communication between the STM32L4 MCU and the
+ * 24LC256 EEPROM. Provides EEPROM initialization, single-byte write, and
+ * single-byte read functions using a 15-bit EEPROM memory address. The EEPROM
+ * uses I2C device addressing and requires two memory address bytes before data
+ * can be written or read.
  *******************************************************************************
- * Version History
- *  Ver.|   Date   |  Description
- *  ---------------------------------------------------------------------------
- *      |          | 
+ * GPIO Wiring
+ * |    Component     | GPIO Identifier | Connector Location | Config
+ *-------------------------------------------------------------------------------
+ * | EEPROM - SCL     | PB8             | CN7-2              | I2C SCL
+ * | EEPROM - SDA     | PB9             | CN7-4              | I2C SDA
  *******************************************************************************
- *
  * Header format adapted from [Code Appendix by Kevin Vo] pg 5
  */
 #include "I2C.h"
 
+/* -----------------------------------------------------------------------------
+ * function : EEPROM_init()
+ * INs      : none
+ * OUTs     : none
+ * action   : Configuration of GPIO pins and registers for I2C1 peripheral
+ * Citation : adapted from [Lab Manual] pg 39
+ * -------------------------------------------------------------------------- */
 void EEPROM_init( void ){
    /* USER configure GPIO pins for I2C alternate functions SCL and SDA */
 
@@ -51,32 +61,39 @@ void EEPROM_init( void ){
 			            | GPIO_MODER_MODE8_1);
 
    RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;  // enable I2C bus clock
-   I2C1->CR1   &= ~( I2C_CR1_PE );        // put I2C into reset (release SDA, SCL)
+   I2C1->CR1   &= ~( I2C_CR1_PE );        // put I2C into reset
    I2C1->CR1   &= ~( I2C_CR1_ANFOFF );    // filters: enable analog
    I2C1->CR1   &= ~( I2C_CR1_DNF );       // filters: disable digital
-   I2C1->TIMINGR = 0x00000103;            // 1 MHz SYSCLK timing from CubeMX
+   I2C1->TIMINGR = 0x00000103;            // timing from .ioc
    I2C1->CR2   |=  ( I2C_CR2_AUTOEND );   // auto send STOP after transmission
    I2C1->CR2   &= ~( I2C_CR2_ADD10 );     // 7-bit address mode
    I2C1->CR1   |=  ( I2C_CR1_PE );        // enable I2C
 
 }
 
+/* -----------------------------------------------------------------------------
+ * function : EEPROM_write()
+ * INs      : I2C target address, EEPROM memory address, Data to write
+ * OUTs     : none
+ * action   : Writes byte to specified EEPROM memory address
+ * Citation : adapted from [Lab Manual] pg 39
+ * -------------------------------------------------------------------------- */
 void EEPROM_write(uint8_t targetAddr, uint16_t memoryAddr, uint8_t dataWrite){
    I2C1->CR2 &= ~( I2C_CR2_RD_WRN );         // CLR CR = write
    I2C1->CR2 &= ~( I2C_CR2_NBYTES );         // Reset # of bytes
    // 2 bytes mem. address & 1 byte data
    I2C1->CR2 |= ( 3 << I2C_CR2_NBYTES_Pos);  // Transmit 3 bytes
 
-   I2C1->CR2   |=  ( I2C_CR2_AUTOEND );   // auto send STOP after transmission
+   I2C1->CR2   |=  ( I2C_CR2_AUTOEND );     // auto send STOP after transmission
 
    // target address
-   I2C1->CR2 &= ~( I2C_CR2_SADD );           // Clear target address
+   I2C1->CR2 &= ~( I2C_CR2_SADD );          // Clear target address
 
    I2C1->CR2 |= ((targetAddr & 0x7F)<<(I2C_CR2_SADD_Pos+1));  // Set address
-   I2C1->CR2 |= I2C_CR2_START; // Start
+   I2C1->CR2 |= I2C_CR2_START;              // Start
    while(!(I2C1->ISR & I2C_ISR_TXIS));      // Wait for TXDR
    // 16 bit EEPROM_MEMORY ADDR
-   I2C1->TXDR = (memoryAddr >> 8);   // High byte of MEM REG
+   I2C1->TXDR = (memoryAddr >> 8);          // High byte of MEM REG
 
 
    while(!(I2C1->ISR & I2C_ISR_TXIS)) ;      // Wait for TXDR
@@ -89,7 +106,13 @@ void EEPROM_write(uint8_t targetAddr, uint16_t memoryAddr, uint8_t dataWrite){
    I2C1->ICR = I2C_ICR_STOPCF; // Clear flag
 }
 
-
+/* -----------------------------------------------------------------------------
+ * function : EEPROM_read()
+ * INs      : I2C target address, EEPROM memory address
+ * OUTs     : none
+ * action   : Reads byte from specified EEPROM memory address
+ * Citation : adapted from [Lab Manual] pg 39
+ * -------------------------------------------------------------------------- */
 uint8_t EEPROM_read(uint8_t targetAddr, uint16_t memoryAddr) {
 	uint8_t memoryData;
 	// build EEPROM transaction
@@ -98,9 +121,10 @@ uint8_t EEPROM_read(uint8_t targetAddr, uint16_t memoryAddr) {
 	I2C1->CR2   &= ~( I2C_CR2_NBYTES );    // clear Byte count
 	I2C1->CR2   |=  ( 2 << I2C_CR2_NBYTES_Pos); // write 2 bytes (2 addr
 	I2C1->CR2   &= ~( I2C_CR2_SADD );      // clear device address
-	I2C1->CR2   |=  ( (targetAddr & 0x7F) << (I2C_CR2_SADD_Pos+1) ); // device addr SHL 1
+	// device addr SHL 1
+	I2C1->CR2   |=  ( (targetAddr & 0x7F) << (I2C_CR2_SADD_Pos+1) );
 	I2C1->CR2   |=    I2C_CR2_START;       // start I2C WRITE op
-	/* USER wait for I2C_ISR_TXIS to clear before writing each Byte, e.g. ... */
+
 	while(!(I2C1->ISR & I2C_ISR_TXIS)) ;   // wait for start condition to transmit
 	I2C1->TXDR = (memoryAddr >> 8); // xmit upper byte of memory address
 
@@ -124,9 +148,7 @@ uint8_t EEPROM_read(uint8_t targetAddr, uint16_t memoryAddr) {
    while(!(I2C1->ISR & I2C_ISR_STOPF))  ;  // wait for STOP
    I2C1->ICR = I2C_ICR_STOPCF; // Clear flag
 
-
 	return memoryData;
-
 }
 
 
