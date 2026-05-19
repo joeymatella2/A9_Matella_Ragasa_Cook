@@ -1,36 +1,22 @@
-/*
- *******************************************************************************
- * @file           : I2C.h
- * @brief          : X
- * project         : EE 329 S'26 AX
- * authors         : joeym
- * version         : 0.1
- * date            : May 15, 2026
- * compiler        : STM32CubeIDE v.1.19.0 Build: 14980_20230301_1550 (UTC)
- * target          : NUCLEO-L4A6ZG
- * clocks          : 4 MHz MSI to AHB2
- * @attention      : (c) 2026 STMicroelectronics.  All rights reserved.
- *******************************************************************************
- * Description: X
- *
- *******************************************************************************
- * Version History
- *  Ver.|   Date   |  Description
- *  ---------------------------------------------------------------------------
- *      |          | 
- *******************************************************************************
- *
- * Header format adapted from [Code Appendix by Kevin Vo] pg 5
- */
-
-/*****************************************************************************
-* EE 329 A5 DAC
-******************************************************************************
-* @file           : dac.h
-* @brief          : DAC configuration and data word related functions
-* authors         : Tyler Ragasa
-******************************************************************************/
-
+/**
+  ******************************************************************************
+  * @file           : I2C.h
+  * @brief          : Header for I2C.c file.
+  * project         : EE 329 S'26 A9
+  * authors         : Joseph Matella, Nathan Cook, Tyler Ragasa
+  *                   This file contains the common defines of the application.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2026 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 
 #ifndef INC_I2C_H_
 #define INC_I2C_H_
