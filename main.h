@@ -1,8 +1,9 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.h
   * @brief          : Header for main.c file.
+  * project         : EE 329 S'26 A9
+  * authors         : Joseph Matella, Nathan Cook, Tyler Ragasa
   *                   This file contains the common defines of the application.
   ******************************************************************************
   * @attention
@@ -16,9 +17,7 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
 
@@ -39,38 +38,8 @@ void LED_Init(void);
 void LED_ON(void);
 void LED_OFF(void);
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
-
-/* USER CODE BEGIN EFP */
-
-/* USER CODE END EFP */
-
-/* Private defines -----------------------------------------------------------*/
-
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }
