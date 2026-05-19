@@ -1,25 +1,20 @@
 /*
  *******************************************************************************
  * @file           : RNG.c
- * @brief          : X
- * project         : EE 329 S'26 AX
- * authors         : joeym
+ * @brief          : Hardware Random Number Generator Interface
+ * project         : EE 329 S'26 A9
+ * authors         : Joseph Matella, Tyler Ragasa, Nathan Cook
  * version         : 0.1
  * date            : May 17, 2026
  * compiler        : STM32CubeIDE v.1.19.0 Build: 14980_20230301_1550 (UTC)
  * target          : NUCLEO-L4A6ZG
- * clocks          : 4 MHz MSI to AHB2
+ * clocks          : 4 MHz MSI to AHB2, HSI48 for RNG
  * @attention      : (c) 2026 STMicroelectronics.  All rights reserved.
  *******************************************************************************
- * Description: Random number generation functions
- *
+ * Description: Initializes the STM32 hardware random number generator using
+ * HSI48. Provides functions to read raw 32-bit random values, generate random
+ * bytes, and generate valid 15-bit EEPROM memory addresses.
  *******************************************************************************
- * Version History
- *  Ver.|   Date   |  Description
- *  ---------------------------------------------------------------------------
- *      |          | 
- *******************************************************************************
- *
  * Header format adapted from [Code Appendix by Kevin Vo] pg 5
  */
 
