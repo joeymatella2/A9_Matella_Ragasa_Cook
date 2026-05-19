@@ -1,123 +1,79 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
+  * project         : EE 329 S'26 A9
+  * authors         : Joseph Matella, Tyler Ragasa, Nathan Cook
+  * version         : 0.1
+  * date            : May 11, 2026
+  *
+  * Description     : Initializes the EEPROM, RNG, SysTick, and LED modules.
+  *                   Generates a random EEPROM memory address and data byte,
+  *                   writes the byte to EEPROM, reads it back, and turns on the
+  *                   on-board LED if the read value matches the written value.
   ******************************************************************************
   * @attention
   *
   * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * This software is provided for academic use as part of EE 329 S'26 A5.
   *
   ******************************************************************************
+  * Header format adapted from [Code Appendix by Kevin Vo] pg 5
   */
-/* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+  // Initializations
   EEPROM_init();
   RNG_Init();
   SysTick_Init();
   LED_Init();
-  /* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
+  // Declare variables
   uint16_t memoryAddress;
   uint8_t writeData;
   uint8_t readData;
-  /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+	  // Generate random memory address and data
 	  memoryAddress = RNG_Read15BitAddress();
 	  writeData = RNG_ReadByte();
+	  // Write to EEPROM
 	  EEPROM_write(EEPROM_ADDRESS, memoryAddress, writeData);
 	  delay_us(5000);
+	  // Read from EEPROM
 	  readData = EEPROM_read(EEPROM_ADDRESS, memoryAddress);
 	  delay_us(5000);
 	  // Check if write data matches read data
 	  if (writeData == readData) {
-		  // Turn onboard LED
+		  // Turn on on-board LED
 		  LED_ON();
 	  } else {
-		  // turn off onboard LED
+		  // turn off on-board LED
 		  LED_OFF();
 	  }
-    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END 3 */
 }
 
-// GPIO B pin 7 as LED
+/* -----------------------------------------------------------------------------
+ * function : LED_Init()
+ * INs      : none
+ * OUTs     : none
+ * action   : Initializes the GPIO pin connected to the on-board LED as an output
+ * -------------------------------------------------------------------------- */
 void LED_Init(void) {
 	RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOBEN);
 	LED_PORT->MODER &= ~(GPIO_MODER_MODE7);
@@ -130,13 +86,26 @@ void LED_Init(void) {
 	LED_PORT->BRR |= (LED_PIN);
 }
 
+/* -----------------------------------------------------------------------------
+ * function : LED_ON()
+ * INs      : none
+ * OUTs     : none
+ * action   : Turns on the on-board LED
+ * -------------------------------------------------------------------------- */
 void LED_ON(void) {
 	LED_PORT->BSRR |= (LED_PIN);
 }
 
+/* -----------------------------------------------------------------------------
+ * function : LED_OFF()
+ * INs      : none
+ * OUTs     : none
+ * action   : Turns off the on-board LED
+ * -------------------------------------------------------------------------- */
 void LED_OFF(void) {
 	LED_PORT->BRR |= (LED_PIN);
 }
+
 /**
   * @brief System Clock Configuration
   * @retval None
